@@ -10,10 +10,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.guifroes1984.agendamento.model.AuthRegisterRequest;
 import com.guifroes1984.agendamento.model.AuthRequest;
 import com.guifroes1984.agendamento.model.AuthResponse;
 import com.guifroes1984.agendamento.security.CustomUserDetailsService;
 import com.guifroes1984.agendamento.service.JwtService;
+import com.guifroes1984.agendamento.service.UsuarioService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -22,23 +24,29 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final AuthenticationManager authenticationManager;
-    private final JwtService jwtService;
-    private final CustomUserDetailsService userDetailsService;
+	private final AuthenticationManager authenticationManager;
+	private final JwtService jwtService;
+	private final CustomUserDetailsService userDetailsService;
+	private final UsuarioService usuarioService;
 
-    @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody AuthRequest request) {
+	@PostMapping("/login")
+	public ResponseEntity<?> login(@RequestBody AuthRequest request) {
 
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getEmail(),
-                        request.getSenha()
-                )
-        );
+		Authentication authentication = authenticationManager
+				.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getSenha()));
 
-        UserDetails user = userDetailsService.loadUserByUsername(request.getEmail());
-        String token = jwtService.gerarToken(user);
+		UserDetails user = userDetailsService.loadUserByUsername(request.getEmail());
+		String token = jwtService.gerarToken(user);
 
-        return ResponseEntity.ok(new AuthResponse(token));
-    }
+		return ResponseEntity.ok(new AuthResponse(token));
+	}
+
+	@PostMapping("/registrar")
+	public ResponseEntity<?> registrar(@RequestBody AuthRegisterRequest request) {
+
+		usuarioService.registrar(request);
+
+		return ResponseEntity.ok("Usuário registrado com sucesso!");
+	}
+
 }
